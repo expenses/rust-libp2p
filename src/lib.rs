@@ -196,6 +196,7 @@ pub use libp2p_swarm as swarm;
 pub use libp2p_tcp as tcp;
 #[doc(inline)]
 pub use libp2p_uds as uds;
+#[cfg(not(any(target_os = "emscripten", target_os = "unknown", target_arch = "wasm32")))]
 #[doc(inline)]
 pub use libp2p_wasm_ext as wasm_ext;
 #[cfg(all(feature = "libp2p-websocket", not(any(target_os = "emscripten", target_os = "unknown", target_arch = "wasm32"))))]
