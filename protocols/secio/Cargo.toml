@@ -27,10 +27,10 @@ sha2 = "0.8.0"
 static_assertions = "1"
 twofish = "0.2.0"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(any(not(target_arch = "wasm32"), target_os = "wasi"))'.dependencies]
 ring = { version = "0.16.9", features = ["alloc"], default-features = false }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(all(target_arch = "wasm32", not(target_os = "wasi")))'.dependencies]
 js-sys = "0.3.10"
 parity-send-wrapper = "0.1"
 wasm-bindgen = "0.2.33"

@@ -164,7 +164,7 @@ pub use libp2p_core as core;
 #[cfg(not(any(target_os = "emscripten", target_os = "unknown", target_arch = "wasm32")))]
 #[doc(inline)]
 pub use libp2p_deflate as deflate;
-#[cfg(not(any(target_os = "emscripten", target_os = "unknown", target_arch = "wasm32")))]
+#[cfg(not(any(target_os = "emscripten", target_os = "unknown")))]
 #[doc(inline)]
 pub use libp2p_dns as dns;
 #[doc(inline)]
