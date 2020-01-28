@@ -31,6 +31,7 @@
 
 use futures::{future::{self, Ready}, prelude::*};
 use futures_timer::Delay;
+#[cfg(feature = "get_if_addrs")]
 use get_if_addrs::{IfAddr, get_if_addrs};
 use ipnet::{IpNet, Ipv4Net, Ipv6Net};
 use libp2p_core::{
@@ -385,6 +386,7 @@ fn ip_to_multiaddr(ip: IpAddr, port: u16) -> Multiaddr {
 // Collect all local host addresses and use the provided port number as listen port.
 fn host_addresses(port: u16) -> io::Result<Vec<(IpAddr, IpNet, Multiaddr)>> {
     let mut addrs = Vec::new();
+    #[cfg(feature = "get_if_addrs")]
     for iface in get_if_addrs()? {
         let ip = iface.ip();
         let ma = ip_to_multiaddr(ip, port);

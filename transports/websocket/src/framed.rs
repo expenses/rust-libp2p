@@ -30,7 +30,9 @@ use libp2p_core::{
     transport::{ListenerEvent, TransportError}
 };
 use log::{debug, trace};
-use soketto::{connection, data, extension::deflate::Deflate, handshake};
+use soketto::{connection, data, handshake};
+#[cfg(feature = "deflate")]
+use soketto::extension::deflate::Deflate;
 use std::{convert::TryInto, fmt, io, pin::Pin, task::Context, task::Poll};
 use url::Url;
 
@@ -186,6 +188,7 @@ where
                         let mut server = handshake::Server::new(stream);
 
                         if use_deflate {
+                            #[cfg(feature = "deflate")]
                             server.add_extension(Box::new(Deflate::new(connection::Mode::Server)));
                         }
 
@@ -327,6 +330,7 @@ where
         let mut client = handshake::Client::new(stream, &host_port, path.as_ref());
 
         if self.use_deflate {
+            #[cfg(feature = "deflate")]
             client.add_extension(Box::new(Deflate::new(connection::Mode::Client)));
         }
 

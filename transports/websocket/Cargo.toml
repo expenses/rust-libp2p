@@ -19,10 +19,14 @@ log = "0.4.8"
 quicksink = "0.1"
 rustls = "0.16"
 rw-stream-sink = { version = "0.2.0", path = "../../misc/rw-stream-sink" }
-soketto = { version = "0.3", features = ["deflate"] }
+soketto = { version = "0.3" }
 url = "2.1"
 webpki = "0.21"
 webpki-roots = "0.18"
 
 [dev-dependencies]
 libp2p-tcp = { version = "0.15.0", path = "../tcp" }
+
+[features]
+default = ["deflate"]
+deflate = ["soketto/deflate"]
