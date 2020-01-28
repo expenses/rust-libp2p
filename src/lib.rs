@@ -187,6 +187,7 @@ pub use libp2p_noise as noise;
 pub use libp2p_ping as ping;
 #[doc(inline)]
 pub use libp2p_plaintext as plaintext;
+#[cfg(not(target_os = "wasi"))]
 #[doc(inline)]
 pub use libp2p_secio as secio;
 #[doc(inline)]
@@ -228,6 +229,7 @@ use std::{error, io, time::Duration};
 ///
 /// > **Note**: This `Transport` is not suitable for production usage, as its implementation
 /// >           reserves the right to support additional protocols or remove deprecated protocols.
+#[cfg(not(target_os = "wasi"))]
 pub fn build_development_transport(keypair: identity::Keypair)
     -> io::Result<impl Transport<Output = (PeerId, impl core::muxing::StreamMuxer<OutboundSubstream = impl Send, Substream = impl Send, Error = impl Into<io::Error>> + Send + Sync), Error = impl error::Error + Send, Listener = impl Send, Dial = impl Send, ListenerUpgrade = impl Send> + Clone>
 {
@@ -240,6 +242,7 @@ pub fn build_development_transport(keypair: identity::Keypair)
 /// and mplex or yamux as the multiplexing layer.
 ///
 /// > **Note**: If you ever need to express the type of this `Transport`.
+#[cfg(not(target_os = "wasi"))]
 pub fn build_tcp_ws_secio_mplex_yamux(keypair: identity::Keypair)
     -> io::Result<impl Transport<Output = (PeerId, impl core::muxing::StreamMuxer<OutboundSubstream = impl Send, Substream = impl Send, Error = impl Into<io::Error>> + Send + Sync), Error = impl error::Error + Send, Listener = impl Send, Dial = impl Send, ListenerUpgrade = impl Send> + Clone>
 {
