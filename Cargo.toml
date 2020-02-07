@@ -11,7 +11,7 @@ categories = ["network-programming", "asynchronous"]
 
 [features]
 default = ["secp256k1", "libp2p-websocket"]
-secp256k1 = ["libp2p-core/secp256k1", "libp2p-secio/secp256k1"]
+secp256k1 = ["libp2p-core/secp256k1"]
 
 [dependencies]
 bytes = "0.5"
@@ -29,7 +29,6 @@ libp2p-plaintext = { version = "0.15.0", path = "protocols/plaintext" }
 libp2p-pnet = { version = "0.15.0", path = "protocols/pnet" }
 libp2p-core = { version = "0.15.0", path = "core" }
 libp2p-core-derive = { version = "0.15.0", path = "misc/core-derive" }
-libp2p-secio = { version = "0.15.0", path = "protocols/secio", default-features = false }
 libp2p-swarm = { version = "0.5.0", path = "swarm" }
 libp2p-uds = { version = "0.15.0", path = "transports/uds" }
 libp2p-wasm-ext = { version = "0.8.0", path = "transports/wasm-ext" }
@@ -70,7 +69,6 @@ members = [
     "protocols/noise",
     "protocols/ping",
     "protocols/plaintext",
-    "protocols/secio",
     "swarm",
     "transports/dns",
     "transports/tcp",

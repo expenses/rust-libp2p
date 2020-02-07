@@ -224,51 +224,6 @@ pub use self::transport_ext::TransportExt;
 
 use std::{error, io, time::Duration};
 
-/// Builds a `Transport` that supports the most commonly-used protocols that libp2p supports.
-///
-/// > **Note**: This `Transport` is not suitable for production usage, as its implementation
-/// >           reserves the right to support additional protocols or remove deprecated protocols.
-pub fn build_development_transport(keypair: identity::Keypair)
-    -> io::Result<impl Transport<Output = (PeerId, impl core::muxing::StreamMuxer<OutboundSubstream = impl Send, Substream = impl Send, Error = impl Into<io::Error>> + Send + Sync), Error = impl error::Error + Send, Listener = impl Send, Dial = impl Send, ListenerUpgrade = impl Send> + Clone>
-{
-     build_tcp_ws_secio_mplex_yamux(keypair)
-}
-
-/// Builds an implementation of `Transport` that is suitable for usage with the `Swarm`.
-///
-/// The implementation supports TCP/IP, WebSockets over TCP/IP, secio as the encryption layer,
-/// and mplex or yamux as the multiplexing layer.
-///
-/// > **Note**: If you ever need to express the type of this `Transport`.
-pub fn build_tcp_ws_secio_mplex_yamux(keypair: identity::Keypair)
-    -> io::Result<impl Transport<Output = (PeerId, impl core::muxing::StreamMuxer<OutboundSubstream = impl Send, Substream = impl Send, Error = impl Into<io::Error>> + Send + Sync), Error = impl error::Error + Send, Listener = impl Send, Dial = impl Send, ListenerUpgrade = impl Send> + Clone>
-{
-    Ok(CommonTransport::new()?
-        .upgrade(core::upgrade::Version::V1)
-        .authenticate(secio::SecioConfig::new(keypair))
-        .multiplex(core::upgrade::SelectUpgrade::new(yamux::Config::default(), mplex::MplexConfig::new()))
-        .map(|(peer, muxer), _| (peer, core::muxing::StreamMuxerBox::new(muxer)))
-        .timeout(Duration::from_secs(20)))
-}
-
-/// Builds an implementation of `Transport` that is suitable for usage with the `Swarm`.
-///
-/// The implementation supports TCP/IP, WebSockets over TCP/IP, secio as the encryption layer,
-/// and mplex or yamux as the multiplexing layer.
-///
-/// > **Note**: If you ever need to express the type of this `Transport`.
-pub fn build_tcp_ws_pnet_secio_mplex_yamux(keypair: identity::Keypair, psk: PreSharedKey)
-    -> io::Result<impl Transport<Output = (PeerId, impl core::muxing::StreamMuxer<OutboundSubstream = impl Send, Substream = impl Send, Error = impl Into<io::Error>> + Send + Sync), Error = impl error::Error + Send, Listener = impl Send, Dial = impl Send, ListenerUpgrade = impl Send> + Clone>
-{
-    Ok(CommonTransport::new()?
-        .and_then(move |socket, _| PnetConfig::new(psk).handshake(socket))
-        .upgrade(core::upgrade::Version::V1)
-        .authenticate(secio::SecioConfig::new(keypair))
-        .multiplex(core::upgrade::SelectUpgrade::new(yamux::Config::default(), mplex::MplexConfig::new()))
-        .map(|(peer, muxer), _| (peer, core::muxing::StreamMuxerBox::new(muxer)))
-        .timeout(Duration::from_secs(20)))
-}
-
 /// Implementation of `Transport` that supports the most common protocols.
 ///
 /// The list currently is TCP/IP, DNS, and WebSockets. However this list could change in the
