@@ -49,7 +49,8 @@ use libp2p::{
     build_development_transport,
     identity,
     mdns::{Mdns, MdnsEvent},
-    swarm::NetworkBehaviourEventProcess
+    swarm::NetworkBehaviourEventProcess,
+    quic,
 };
 use std::{error::Error, task::{Context, Poll}};
 
@@ -59,9 +60,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Create a random key for ourselves.
     let local_key = identity::Keypair::generate_ed25519();
     let local_peer_id = PeerId::from(local_key.public());
+    let local_multiaddr = "/ip4/127.0.0.1/udp/0/quic".parse().unwrap();
 
-    // Set up a an encrypted DNS-enabled TCP Transport over the Mplex protocol.
-    let transport = build_development_transport(local_key)?;
+    let config = quic::Config::new(&local_key, local_multiaddr).unwrap();
+    let endpoint = quic::Endpoint::new(config).unwrap();
+    let transport = quic::QuicTransport(endpoint);
 
     // We create a custom network behaviour that combines Kademlia and mDNS.
     #[derive(NetworkBehaviour)]
