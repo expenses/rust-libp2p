@@ -59,7 +59,8 @@ use libp2p::{
     identity,
     floodsub::{self, Floodsub, FloodsubEvent},
     mdns::{Mdns, MdnsEvent},
-    swarm::NetworkBehaviourEventProcess
+    swarm::NetworkBehaviourEventProcess,
+    quic
 };
 use std::{error::Error, task::{Context, Poll}};
 
@@ -72,7 +73,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Local peer id: {:?}", local_peer_id);
 
     // Set up a an encrypted DNS-enabled TCP Transport over the Mplex and Yamux protocols
-    let transport = libp2p::build_development_transport(local_key)?;
+    let local_multiaddr: Multiaddr = "/ip4/127.0.0.1/udp/0/quic".parse().unwrap();
+
+    let config = quic::Config::new(&local_key, local_multiaddr.clone()).unwrap();
+    let endpoint = quic::Endpoint::new(config).unwrap();
+    let transport = quic::QuicTransport(endpoint);
 
     // Create a Floodsub topic
     let floodsub_topic = floodsub::Topic::new("chat");
@@ -143,7 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut stdin = io::BufReader::new(io::stdin()).lines();
 
     // Listen on all interfaces and whatever port the OS assigns
-    Swarm::listen_on(&mut swarm, "/ip4/0.0.0.0/tcp/0".parse()?)?;
+    Swarm::listen_on(&mut swarm, local_multiaddr)?;
 
     // Kick it off
     let mut listening = false;
