@@ -51,6 +51,7 @@ use libp2p::{
     mdns::{Mdns, MdnsEvent},
     swarm::NetworkBehaviourEventProcess,
     quic,
+    Multiaddr,
 };
 use std::{error::Error, task::{Context, Poll}};
 
@@ -60,9 +61,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Create a random key for ourselves.
     let local_key = identity::Keypair::generate_ed25519();
     let local_peer_id = PeerId::from(local_key.public());
-    let local_multiaddr = "/ip4/127.0.0.1/udp/0/quic".parse().unwrap();
+    let local_multiaddr: Multiaddr = "/ip4/127.0.0.1/udp/0/quic".parse().unwrap();
 
-    let config = quic::Config::new(&local_key, local_multiaddr).unwrap();
+    let config = quic::Config::new(&local_key, local_multiaddr.clone()).unwrap();
     let endpoint = quic::Endpoint::new(config).unwrap();
     let transport = quic::QuicTransport(endpoint);
 
@@ -78,6 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         fn inject_event(&mut self, event: MdnsEvent) {
             if let MdnsEvent::Discovered(list) = event {
                 for (peer_id, multiaddr) in list {
+                    log::info!("Discovered {}", multiaddr);
                     self.kademlia.add_address(&peer_id, multiaddr);
                 }
             }
@@ -131,7 +133,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut stdin = io::BufReader::new(io::stdin()).lines();
 
     // Listen on all interfaces and whatever port the OS assigns.
-    Swarm::listen_on(&mut swarm, "/ip4/0.0.0.0/tcp/0".parse()?)?;
+    Swarm::listen_on(&mut swarm, local_multiaddr)?;
 
     // Kick it off.
     let mut listening = false;
@@ -204,6 +206,36 @@ fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String) {
                 expires: None,
             };
             kademlia.put_record(record, Quorum::One).expect("Failed to store record locally.");
+        },
+        Some("PEER") => {
+            let addr = match args.next() {
+                Some(addr) => match addr.parse() {
+                    Ok(addr) => addr,
+                    Err(error) => {
+                        eprintln!("{:?}", error);
+                        return;
+                    }
+                },
+                None => {
+                    eprintln!("Expected multiaddr");
+                    return;
+                }
+            };
+            let peer = match args.next() {
+                Some(peer) => match peer.parse() {
+                    Ok(peer) => peer,
+                    Err(error) => {
+                        eprintln!("{:?}", error);
+                        return;
+                    }
+                },
+                None => {
+                    eprintln!("Expected peer");
+                    return;
+                }
+            };
+            
+            kademlia.add_address(&peer, addr);
         }
         _ => {
             eprintln!("expected GET or PUT");
