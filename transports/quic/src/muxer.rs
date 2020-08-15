@@ -21,7 +21,7 @@
 use crate::connection::{Connection, ConnectionEvent};
 use crate::error::Error;
 
-use libp2p_core::StreamMuxer;
+use libp2p_core::{StreamMuxer, muxing::StreamMuxerEvent};
 use parking_lot::Mutex;
 use std::{
     collections::HashMap,
@@ -91,7 +91,7 @@ impl StreamMuxer for QuicMuxer {
     type Substream = quinn_proto::StreamId;
     type Error = Error;
 
-    fn poll_inbound(&self, cx: &mut Context<'_>) -> Poll<Result<Self::Substream, Self::Error>> {
+    fn poll_event(&self, cx: &mut Context<'_>) -> Poll<Result<StreamMuxerEvent<Self::Substream>, Self::Error>> {
         // We use `poll_inbound` to perform the background processing of the entire connection.
         let mut inner = self.inner.lock();
         span!("poll_inbound", side = debug(inner.connection.side()));
@@ -152,7 +152,7 @@ impl StreamMuxer for QuicMuxer {
             inner.substreams.insert(substream, Default::default());
             inner.writable_substreams += 1;
             tracing::trace!("New substream");
-            Poll::Ready(Ok(substream))
+            Poll::Ready(Ok(StreamMuxerEvent::InboundSubstream(substream)))
         } else if inner.connection.is_drained() {
             if let Some(w) = inner.poll_close_waker.take() {
                 tracing::trace!("Inner connection is drained, waking close waker");
